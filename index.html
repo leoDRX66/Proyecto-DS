@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generador de Recetas Truchas</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+    <div class="container">
+        <header>
+            <h1>Generador de Documentos Médicos</h1>
+            <p>Una herramienta intuitiva para crear documentos al instante.</p>
+        </header>
+
+        <main>
+            <div class="selector-container">
+                <label for="document-type">Crear:</label>
+                <select id="document-type">
+                    <option value="">Seleccione un documento...</option>
+                    <option value="receta">📄 Receta Médica</option>
+                    <option value="parte">🩺 Parte Médico</option>
+                    <option value="orden">📋 Orden Médica</option>
+                </select>
+            </div>
+
+            <div id="form-container">
+                <h2 id="form-title"></h2>
+
+                <form id="form-receta" class="document-form hidden">
+                    <div class="form-group">
+                        <label for="paciente-receta">Buscar Paciente:</label>
+                        <input type="text" id="paciente-receta" name="paciente" placeholder="Nombre del paciente..." required>
+                        <label for="paciente-receta">DNI:</label>
+                        <input type="text" id="paciente-receta" name="paciente" placeholder="DNI del paciente..." required>
+                        <label for="paciente-receta">CUIL:</label>
+                        <input type="text" id="paciente-receta" name="paciente" placeholder="CUIL del paciente..." required>
+                        <label for="paciente-receta">Obra social:</label>
+                        <input type="text" id="paciente-receta" name="paciente" placeholder="Obra social del paciente..." required>
+                        <label for="paciente-receta">Sexo:</label>
+                        <input type="text" id="paciente-receta" name="paciente" placeholder="Sexo del paciente..." required>
+                    </div>
+                    <div id="medicamentos-list">
+                        <div class="form-group medicamento-item">
+                            <label>Medicamento:</label>
+                            <br>
+                            <input type="text" name="medicamento[]" placeholder="Ej: Paracetamol 500mg" required>
+                            <br>
+                            <label>Indicación:</label>
+                            <br>
+                            <input type="text" name="indicacion[]" placeholder="Ej: 1 cada 8 horas" required>
+                        </div>
+                    </div>
+                    <button type="button" id="add-medicamento-btn">+ Agregar otro medicamento</button>
+                    <button type="submit">Generar Receta</button>
+                </form>
+
+                <form id="form-parte" class="document-form hidden">
+                    <div class="form-group">
+                        <label for="paciente-parte">Buscar Paciente:</label>
+                        <input type="text" id="paciente-parte" name="paciente" placeholder="Nombre del paciente..." required>
+                    </div>
+                    <div class="form-group">
+                        <label for="diagnostico">Diagnóstico Principal:</label>
+                        <textarea id="diagnostico" name="diagnostico" rows="4" placeholder="Describa el diagnóstico..." required></textarea>
+                    </div>
+                     <div class="form-group">
+                        <label>Días de Licencia:</label>
+                        <div class="quick-options">
+                           <button type="button" class="dias-btn" data-dias="24 hs">24 hs</button>
+                           <button type="button" class="dias-btn" data-dias="48 hs">48 hs</button>
+                           <button type="button" class="dias-btn" data-dias="7 días">7 días</button>
+                           <input type="hidden" id="dias-licencia" name="dias_licencia" required>
+                        </div>
+                    </div>
+                    <button type="submit">Generar Parte</button>
+                </form>
+
+                <form id="form-orden" class="document-form hidden">
+                    <div class="form-group">
+                        <label for="paciente-orden">Buscar Paciente:</label>
+                        <input type="text" id="paciente-orden" name="paciente" placeholder="Nombre del paciente..." required>
+                    </div>
+                    <div class="form-group">
+                        <label for="tipo-estudio">Tipo de Estudio:</label>
+                        <select id="tipo-estudio" name="tipo_estudio" required>
+                            <option value="">Seleccionar tipo...</option>
+                            <option value="Analisis de Sangre">Análisis de Sangre</option>
+                            <option value="Radiografia">Radiografía</option>
+                            <option value="Ecografia">Ecografía</option>
+                            <option value="Resonancia Magnetica">Resonancia Magnética</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="detalles-estudio">Detalles y Justificación:</label>
+                        <textarea id="detalles-estudio" name="detalles" rows="5" placeholder="Especifique los detalles del estudio solicitado..." required></textarea>
+                    </div>
+                    <button type="submit">Generar Orden</button>
+                </form>
+            </div>
+
+            <div id="download-section" class="hidden">
+                <h3>¡Documento generado con éxito!</h3>
+                <p>Tu documento está listo para ser descargado.</p>
+                <button id="download-btn">Descargar Documento</button>
+            </div>
+
+        </main>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
