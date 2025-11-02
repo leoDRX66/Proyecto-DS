@@ -1,5 +1,4 @@
 // --- DATOS DE MÉDICOS FICTICIOS ---
-// (Este es el nuevo bloque de datos)
 const medicos = [
     { nombre: "Dra. Elena Ramírez", especializacion: "Cardiología", matricula: "MN 12345" },
     { nombre: "Dr. Carlos Gutiérrez", especializacion: "Pediatría", matricula: "MN 12346" },
@@ -25,21 +24,19 @@ const medicos = [
 
 
 document.addEventListener('DOMContentLoaded', () => {
+    // --- (NUEVO) Importar el constructor de jsPDF ---
+    // Asegúrate de que jsPDF esté cargado en tu HTML
+    const { jsPDF } = window.jspdf;
+
     // --- ELEMENTOS DEL DOM ---
     const selector = document.getElementById('document-type');
     const formContainer = document.getElementById('form-container');
     const formTitle = document.getElementById('form-title');
-    const downloadSection = document.getElementById('download-section');
-    const downloadBtn = document.getElementById('download-btn');
-    // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    // ! NOTA: Tu HTML no tiene un "reset-btn". 
-    // ! Si lo añades, este código funcionará.
-    // const resetBtn = document.getElementById('reset-btn'); 
-    // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    
+    // (ELIMINADOS) 'downloadSection' y 'downloadBtn' ya no son necesarios
+    
     const addMedBtn = document.getElementById('add-medicamento-btn');
     const medicamentosList = document.getElementById('medicamentos-list');
-    
-    // --- (NUEVO) Seleccionamos TODOS los menús de doctores ---
     const doctorDropdowns = document.querySelectorAll('.doctor-select');
 
     const forms = {
@@ -47,35 +44,26 @@ document.addEventListener('DOMContentLoaded', () => {
         parte: document.getElementById('form-parte'),
         orden: document.getElementById('form-orden')
     };
+    
+    // (ELIMINADAS) 'generatedContent' y 'documentName' globales
 
-    let generatedContent = '';
-    let documentName = '';
-
-    // --- (NUEVO) FUNCIÓN PARA POBLAR LOS MENÚS DE DOCTORES ---
+    // --- FUNCIÓN PARA POBLAR LOS MENÚS DE DOCTORES ---
     function populateDoctorDropdowns() {
         doctorDropdowns.forEach(dropdown => {
-            // Limpiar opciones previas (excepto la primera)
             while (dropdown.options.length > 1) {
                 dropdown.remove(1);
             }
-            
-            // Añadir cada médico como una opción
             medicos.forEach(medico => {
                 const option = document.createElement('option');
-                // El valor será el "Firma"
                 option.value = `${medico.nombre} - ${medico.especializacion} - Mat. ${medico.matricula}`;
-                // El texto visible será más amigable
                 option.textContent = `${medico.nombre} (${medico.especializacion})`;
                 dropdown.appendChild(option);
             });
         });
     }
-
-    // --- (NUEVO) Llamamos a la función al cargar la página ---
     populateDoctorDropdowns();
 
-
-    // --- MANEJADOR DEL MENÚ PRINCIPAL (LÓGICA CORREGIDA) ---
+    // --- MANEJADOR DEL MENÚ PRINCIPAL (Sin cambios) ---
     selector.addEventListener('change', () => {
         const selectedValue = selector.value;
         const titles = {
@@ -84,59 +72,45 @@ document.addEventListener('DOMContentLoaded', () => {
             orden: 'Nueva Orden Médica'
         };
 
-        // 1. Busca si ya hay un formulario visible.
         const currentlyVisibleForm = document.querySelector('.document-form.visible');
         if (currentlyVisibleForm) {
-            // Si lo hay, le quita la clase 'visible' para que inicie su animación de salida.
             currentlyVisibleForm.classList.remove('visible');
-            
-            // 2. Después de que termine la animación (500ms), le añade la clase 'hidden' para ocultarlo por completo.
             setTimeout(() => {
                 currentlyVisibleForm.classList.add('hidden');
-            }, 500); // Este tiempo debe coincidir con la duración de la transición en el CSS.
+            }, 500); 
         }
 
-        // 3. Si el usuario ha seleccionado una opción válida...
         if (selectedValue) {
             const selectedForm = forms[selectedValue];
             formTitle.textContent = titles[selectedValue];
-
-            // 4. Le quita la clase 'hidden' para que ocupe su espacio en la página.
             selectedForm.classList.remove('hidden');
-            
-            // 5. Con un pequeño retardo, le añade la clase 'visible' para activar la animación de entrada.
-            //    Esto asegura que el navegador procese el cambio de 'display' antes de iniciar la animación.
             setTimeout(() => {
                 selectedForm.classList.add('visible');
             }, 10);
         } else {
-            // Si el usuario selecciona la opción por defecto ("Seleccione..."), se limpia el título.
             formTitle.textContent = '';
         }
     });
 
-    // --- FUNCIÓN PARA REINICIAR LA INTERFAZ ---
-    // Tu HTML no incluye un 'reset-btn', pero si lo añades,
-    // esta función (que ya tenías) lo manejará.
+    // --- (MODIFICADA) FUNCIÓN PARA REINICIAR LA INTERFAZ ---
     const resetUI = () => {
-        downloadSection.classList.remove('visible');
-        setTimeout(() => downloadSection.classList.add('hidden'), 500);
-
+        // (ELIMINADO) Código que manejaba 'downloadSection'
+        
         Object.values(forms).forEach(form => {
             form.classList.remove('visible');
             form.reset();
             setTimeout(() => form.classList.add('hidden'), 500);
         });
 
+        // Limpia medicamentos adicionales
         const extraMedicamentos = medicamentosList.querySelectorAll('.medicamento-item:not(:first-child)');
         extraMedicamentos.forEach(item => item.remove());
 
         formTitle.textContent = '';
         selector.value = '';
     };
-    // resetBtn.addEventListener('click', resetUI); // Descomenta si añades el botón
 
-    // --- LÓGICA PARA AÑADIR MEDICAMENTOS ---
+    // --- LÓGICA PARA AÑADIR MEDICAMENTOS (Sin cambios) ---
     addMedBtn.addEventListener('click', () => {
         const newItem = document.createElement('div');
         newItem.classList.add('form-group', 'medicamento-item');
@@ -153,7 +127,7 @@ document.addEventListener('DOMContentLoaded', () => {
         medicamentosList.appendChild(newItem);
     });
 
-    // --- LÓGICA PARA BOTONES DE DÍAS ---
+    // --- LÓGICA PARA BOTONES DE DÍAS (Sin cambios) ---
     document.querySelectorAll('.dias-btn').forEach(button => {
         button.addEventListener('click', () => {
             document.querySelectorAll('.dias-btn').forEach(btn => btn.classList.remove('selected'));
@@ -162,79 +136,113 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    // --- MANEJO DEL ENVÍO DE FORMULARIOS ---
+    // --- (MODIFICADO) MANEJO DEL ENVÍO DE FORMULARIOS ---
     Object.values(forms).forEach(form => {
         form.addEventListener('submit', (event) => {
             event.preventDefault();
             const formData = new FormData(form);
-            let data;
             
+            // Usamos Object.fromEntries para capturar TODOS los campos fácilmente
+            let data = Object.fromEntries(formData.entries());
+            data.doctor = data.doctor_seleccionado; // Renombramos para claridad
+
+            // Casos especiales (campos múltiples)
             if (form.id === 'form-receta') {
-                data = {
-                    paciente: formData.get('paciente'),
-                    medicamentos: formData.getAll('medicamento[]'),
-                    indicaciones: formData.getAll('indicacion[]'),
-                    // (NUEVO) Capturamos el doctor
-                    doctor: formData.get('doctor_seleccionado') 
-                };
-            } else {
-                data = Object.fromEntries(formData.entries());
-                // (NUEVO) Capturamos el doctor (ya está en formData, 
-                // pero lo renombramos para consistencia)
-                data.doctor = data.doctor_seleccionado; 
+                data.medicamentos = formData.getAll('medicamento[]');
+                data.indicaciones = formData.getAll('indicacion[]');
             }
 
-            form.classList.remove('visible');
-            formTitle.textContent = '';
-            
+            // 1. Genera el PDF y dispara la descarga
             generateFileContent(form.id, data);
 
-            downloadSection.classList.remove('hidden');
-            setTimeout(() => downloadSection.classList.add('visible'), 10);
+            // 2. Resetea la UI para volver al inicio
+            resetUI();
         });
     });
     
-    // --- GENERACIÓN DE CONTENIDO DEL ARCHIVO (MODIFICADO) ---
+    // --- (REESCRITO) GENERACIÓN DE CONTENIDO AHORA EN PDF ---
     function generateFileContent(formId, data) {
-        let content = `--- DOCUMENTO MÉDICO GENERADO ---\n\n`;
-        const patient = data.paciente || 'N/A';
+        // 1. Crear un nuevo documento PDF
+        const doc = new jsPDF();
         
+        let documentName = '';
+        const patient = data.paciente || 'N/A';
+        let y = 20; // Posición Y inicial (margen superior)
+        const margin = 15; // Margen izquierdo
+        const lineHeight = 8; // Espacio entre líneas
+        const anchoMaximo = 180; // Ancho máximo del texto antes de cortar línea
+
+        // Título del documento
+        doc.setFontSize(18);
+        doc.text("DOCUMENTO MÉDICO", margin, y);
+        y += lineHeight * 2; // Doble espacio
+
+        doc.setFontSize(12);
+
         if (formId === 'form-receta') {
-            documentName = `Receta-${patient.replace(/\s/g, '_')}.txt`;
-            downloadBtn.textContent = 'Descargar Receta';
-            content += `TIPO: Receta Médica\nPACIENTE: ${patient}\n\nMEDICAMENTOS:\n`;
+            documentName = `Receta-${patient.replace(/\s/g, '_')}.pdf`;
+            doc.text(`TIPO: Receta Médica`, margin, y); y += lineHeight;
+            doc.text(`FECHA: ${data.paciente_fecha || 'N/A'}`, margin, y); y += lineHeight * 1.5;
+
+            doc.text(`PACIENTE: ${patient}`, margin, y); y += lineHeight;
+            doc.text(`DNI: ${data.paciente_dni || 'N/A'}`, margin, y); y += lineHeight;
+            doc.text(`EDAD: ${data.paciente_edad || 'N/A'}`, margin, y); y += lineHeight;
+            doc.text(`OBRA SOCIAL: ${data.paciente_os || 'N/A'}`, margin, y); y += lineHeight * 1.5;
+
+            doc.setFontSize(14);
+            doc.text("MEDICAMENTOS:", margin, y); y += lineHeight;
+            doc.setFontSize(12);
             data.medicamentos.forEach((medicamento, index) => {
                 const indicacion = data.indicaciones[index] || 'Sin indicación';
-                content += `- ${medicamento}: ${indicacion}\n`;
+                doc.text(`- ${medicamento}`, margin + 5, y); y += lineHeight;
+                doc.setFontSize(10);
+                doc.text(`  Indicación: ${indicacion}`, margin + 5, y); y += lineHeight;
+                doc.setFontSize(12);
             });
+        
         } else if (formId === 'form-parte') {
-            documentName = `Parte-${patient.replace(/\s/g, '_')}.txt`;
-            downloadBtn.textContent = 'Descargar Parte Médico';
-            content += `TIPO: Parte Médico\nPACIENTE: ${patient}\nDIAGNÓSTICO: ${data.diagnostico}\nLICENCIA: ${data.dias_licencia}\n`;
+            documentName = `Parte-${patient.replace(/\s/g, '_')}.pdf`;
+            doc.text(`TIPO: Parte Médico`, margin, y); y += lineHeight;
+            doc.text(`FECHA: ${data['paciente-fecha'] || 'N/A'}`, margin, y); y += lineHeight * 1.5;
+
+            doc.text(`PACIENTE: ${patient}`, margin, y); y += lineHeight;
+            doc.text(`DNI: ${data.paciente_dni || 'N/A'}`, margin, y); y += lineHeight;
+            doc.text(`EDAD: ${data.paciente_edad || 'N/A'}`, margin, y); y += lineHeight * 1.5;
+            
+            doc.text(`DIAGNÓSTICO:`, margin, y); y += lineHeight;
+            const diagnostico = doc.splitTextToSize(data.diagnostico || 'N/A', anchoMaximo);
+            doc.text(diagnostico, margin + 5, y); y += (diagnostico.length * lineHeight);
+            
+            doc.text(`LICENCIA: ${data.dias_licencia || 'N/A'}`, margin, y); y += lineHeight;
+        
         } else if (formId === 'form-orden') {
-            documentName = `Orden-${patient.replace(/\s/g, '_')}.txt`;
-            downloadBtn.textContent = 'Descargar Orden Médica';
-            content += `TIPO: Orden Médica\nPACIENTE: ${patient}\nTIPO DE ESTUDIO: ${data.tipo_estudio}\nDETALLES: ${data.detalles}\n`;
+            documentName = `Orden-${patient.replace(/\s/g, '_')}.pdf`;
+            doc.text(`TIPO: Orden Médica`, margin, y); y += lineHeight * 1.5;
+
+            doc.text(`PACIENTE: ${patient}`, margin, y); y += lineHeight;
+            doc.text(`DNI: ${data.paciente_dni || 'N/A'}`, margin, y); y += lineHeight;
+            doc.text(`EDAD: ${data.paciente_edad || 'N/A'}`, margin, y); y += lineHeight;
+            doc.text(`OBRA SOCIAL: ${data.paciente_os || 'N/A'}`, margin, y); y += lineHeight * 1.5;
+
+            doc.text(`TIPO DE ESTUDIO: ${data.tipo_estudio || 'N/A'}`, margin, y); y += lineHeight * 1.5;
+            
+            doc.text(`DETALLES Y JUSTIFICACIÓN:`, margin, y); y += lineHeight;
+            // La función 'splitTextToSize' corta el texto largo para que quepa en el ancho de la página
+            const details = doc.splitTextToSize(data.detalles || 'Sin detalles', anchoMaximo); 
+            doc.text(details, margin + 5, y);
+            y += (details.length * lineHeight); // Aumenta 'y' por cada línea de detalle
         }
         
-        // (NUEVO) Añadimos la firma del doctor al final de CUALQUIER documento
-        content += `\n\n\n------------------------------------\n`;
-        content += `Firma del Profesional:\n`;
-        content += `${data.doctor}\n`; // data.doctor contiene el string "Nombre - Especialidad - Matrícula"
+        // Firma del doctor (común a todos los documentos)
+        y += lineHeight * 4; // Espacio antes de la firma
+        doc.text("------------------------------------", margin, y); y += lineHeight;
+        doc.text("Firma del Profesional:", margin, y); y += lineHeight;
+        doc.text(data.doctor || 'Sin firma', margin, y);
         
-        generatedContent = content;
+        // 3. Guardar el PDF y forzar la descarga
+        doc.save(documentName);
     }
 
-    // --- MANEJADOR DEL BOTÓN DE DESCARGA ---
-    downloadBtn.addEventListener('click', () => {
-        const blob = new Blob([generatedContent], { type: 'text/plain;charset=utf-8' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = documentName;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-    });
+    // --- (ELIMINADO) MANEJADOR DEL BOTÓN DE DESCARGA ---
+    // ya no es necesario.
 });

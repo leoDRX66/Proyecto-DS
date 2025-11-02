@@ -89,6 +89,8 @@ header p {
 }
 
 input[type="text"],
+/* (NUEVO) Aplicar estilos a input[type="date"] */
+input[type="date"], 
 textarea,
 select {
     width: 100%;
@@ -102,11 +104,17 @@ select {
 /* Estilos específicos para el formulario de receta */
 .medicamento-item {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    /* (MODIFICADO) Cambiado para que quepa mejor la nueva estructura */
+    grid-template-columns: 1fr; 
     gap: 10px;
     border-left: 3px solid #3498db;
     padding-left: 15px;
     margin-top: 15px;
+}
+
+/* (NUEVO) Estilos para los <br> dentro del item de medicamento */
+.medicamento-item br {
+    display: none;
 }
 
 /* Estilos para los botones */
@@ -152,7 +160,9 @@ button[type="submit"]:hover {
 }
 
 
-/* Sección de descarga */
+/* Sección de descarga 
+  (YA NO SE USA, PERO NO MOLESTA DEJARLA) 
+*/
 #download-section {
     text-align: center;
     padding: 20px;
