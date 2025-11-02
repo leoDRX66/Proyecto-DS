@@ -1,3 +1,29 @@
+// --- DATOS DE MÉDICOS FICTICIOS ---
+// (Este es el nuevo bloque de datos)
+const medicos = [
+    { nombre: "Dra. Elena Ramírez", especializacion: "Cardiología", matricula: "MN 12345" },
+    { nombre: "Dr. Carlos Gutiérrez", especializacion: "Pediatría", matricula: "MN 12346" },
+    { nombre: "Dra. Sofía Torres", especializacion: "Dermatología", matricula: "MN 12347" },
+    { nombre: "Dr. Juan Pérez", especializacion: "Traumatología", matricula: "MN 12348" },
+    { nombre: "Dra. Lucía Morales", especializacion: "Ginecología", matricula: "MN 12349" },
+    { nombre: "Dr. Mateo Fernández", especializacion: "Neurología", matricula: "MN 12350" },
+    { nombre: "Dra. Valentina Díaz", especializacion: "Oftalmología", matricula: "MN 12351" },
+    { nombre: "Dr. Diego Ruiz", especializacion: "Otorrinolaringología", matricula: "MN 12352" },
+    { nombre: "Dra. Camila Acosta", especializacion: "Endocrinología", matricula: "MN 12353" },
+    { nombre: "Dr. Santiago Gómez", especializacion: "Urología", matricula: "MN 12354" },
+    { nombre: "Dra. Isabel Herrera", especializacion: "Psiquiatría", matricula: "MN 12355" },
+    { nombre: "Dr. Martín Castro", especializacion: "Gastroenterología", matricula: "MN 12356" },
+    { nombre: "Dra. Paula Silva", especializacion: "Neumología", matricula: "MN 12357" },
+    { nombre: "Dr. Lucas Romero", especializacion: "Reumatología", matricula: "MN 12358" },
+    { nombre: "Dra. Gabriela Núñez", especializacion: "Hematología", matricula: "MN 12359" },
+    { nombre: "Dr. Nicolás Molina", especializacion: "Infectología", matricula: "MN 12360" },
+    { nombre: "Dra. Julieta Rivas", especializacion: "Medicina General", matricula: "MN 12361" },
+    { nombre: "Dr. Facundo Alonso", especializacion: "Cirugía General", matricula: "MN 12362" },
+    { nombre: "Dra. Agustina Vega", especializacion: "Nefrología", matricula: "MN 12363" },
+    { nombre: "Dr. Tomás Mendoza", especializacion: "Oncología", matricula: "MN 12364" }
+];
+
+
 document.addEventListener('DOMContentLoaded', () => {
     // --- ELEMENTOS DEL DOM ---
     const selector = document.getElementById('document-type');
@@ -5,9 +31,16 @@ document.addEventListener('DOMContentLoaded', () => {
     const formTitle = document.getElementById('form-title');
     const downloadSection = document.getElementById('download-section');
     const downloadBtn = document.getElementById('download-btn');
-    const resetBtn = document.getElementById('reset-btn');
+    // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    // ! NOTA: Tu HTML no tiene un "reset-btn". 
+    // ! Si lo añades, este código funcionará.
+    // const resetBtn = document.getElementById('reset-btn'); 
+    // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     const addMedBtn = document.getElementById('add-medicamento-btn');
     const medicamentosList = document.getElementById('medicamentos-list');
+    
+    // --- (NUEVO) Seleccionamos TODOS los menús de doctores ---
+    const doctorDropdowns = document.querySelectorAll('.doctor-select');
 
     const forms = {
         receta: document.getElementById('form-receta'),
@@ -17,6 +50,30 @@ document.addEventListener('DOMContentLoaded', () => {
 
     let generatedContent = '';
     let documentName = '';
+
+    // --- (NUEVO) FUNCIÓN PARA POBLAR LOS MENÚS DE DOCTORES ---
+    function populateDoctorDropdowns() {
+        doctorDropdowns.forEach(dropdown => {
+            // Limpiar opciones previas (excepto la primera)
+            while (dropdown.options.length > 1) {
+                dropdown.remove(1);
+            }
+            
+            // Añadir cada médico como una opción
+            medicos.forEach(medico => {
+                const option = document.createElement('option');
+                // El valor será el "Firma"
+                option.value = `${medico.nombre} - ${medico.especializacion} - Mat. ${medico.matricula}`;
+                // El texto visible será más amigable
+                option.textContent = `${medico.nombre} (${medico.especializacion})`;
+                dropdown.appendChild(option);
+            });
+        });
+    }
+
+    // --- (NUEVO) Llamamos a la función al cargar la página ---
+    populateDoctorDropdowns();
+
 
     // --- MANEJADOR DEL MENÚ PRINCIPAL (LÓGICA CORREGIDA) ---
     selector.addEventListener('change', () => {
@@ -59,6 +116,8 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // --- FUNCIÓN PARA REINICIAR LA INTERFAZ ---
+    // Tu HTML no incluye un 'reset-btn', pero si lo añades,
+    // esta función (que ya tenías) lo manejará.
     const resetUI = () => {
         downloadSection.classList.remove('visible');
         setTimeout(() => downloadSection.classList.add('hidden'), 500);
@@ -75,31 +134,22 @@ document.addEventListener('DOMContentLoaded', () => {
         formTitle.textContent = '';
         selector.value = '';
     };
-    resetBtn.addEventListener('click', resetUI);
+    // resetBtn.addEventListener('click', resetUI); // Descomenta si añades el botón
 
     // --- LÓGICA PARA AÑADIR MEDICAMENTOS ---
     addMedBtn.addEventListener('click', () => {
         const newItem = document.createElement('div');
         newItem.classList.add('form-group', 'medicamento-item');
-
-        const label = document.createElement('label');
-        label.textContent = 'Medicamento Adicional:';
         
-        const medInput = document.createElement('input');
-        medInput.type = 'text';
-        medInput.name = 'medicamento[]';
-        medInput.placeholder = 'Otro medicamento';
-        medInput.required = true;
-
-        const indInput = document.createElement('input');
-        indInput.type = 'text';
-        indInput.name = 'indicacion[]';
-        indInput.placeholder = 'Indicación';
-        indInput.required = true;
-        
-        newItem.appendChild(label);
-        newItem.appendChild(medInput);
-        newItem.appendChild(indInput);
+        newItem.innerHTML = `
+            <label>Medicamento Adicional:</label>
+            <br>
+            <input type-="text" name="medicamento[]" placeholder="Otro medicamento" required>
+            <br>
+            <label>Indicación:</label>
+            <br>
+            <input type="text" name="indicacion[]" placeholder="Indicación" required>
+        `;
         medicamentosList.appendChild(newItem);
     });
 
@@ -123,10 +173,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 data = {
                     paciente: formData.get('paciente'),
                     medicamentos: formData.getAll('medicamento[]'),
-                    indicaciones: formData.getAll('indicacion[]')
+                    indicaciones: formData.getAll('indicacion[]'),
+                    // (NUEVO) Capturamos el doctor
+                    doctor: formData.get('doctor_seleccionado') 
                 };
             } else {
                 data = Object.fromEntries(formData.entries());
+                // (NUEVO) Capturamos el doctor (ya está en formData, 
+                // pero lo renombramos para consistencia)
+                data.doctor = data.doctor_seleccionado; 
             }
 
             form.classList.remove('visible');
@@ -139,7 +194,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
     
-    // --- GENERACIÓN DE CONTENIDO DEL ARCHIVO ---
+    // --- GENERACIÓN DE CONTENIDO DEL ARCHIVO (MODIFICADO) ---
     function generateFileContent(formId, data) {
         let content = `--- DOCUMENTO MÉDICO GENERADO ---\n\n`;
         const patient = data.paciente || 'N/A';
@@ -161,6 +216,11 @@ document.addEventListener('DOMContentLoaded', () => {
             downloadBtn.textContent = 'Descargar Orden Médica';
             content += `TIPO: Orden Médica\nPACIENTE: ${patient}\nTIPO DE ESTUDIO: ${data.tipo_estudio}\nDETALLES: ${data.detalles}\n`;
         }
+        
+        // (NUEVO) Añadimos la firma del doctor al final de CUALQUIER documento
+        content += `\n\n\n------------------------------------\n`;
+        content += `Firma del Profesional:\n`;
+        content += `${data.doctor}\n`; // data.doctor contiene el string "Nombre - Especialidad - Matrícula"
         
         generatedContent = content;
     }

@@ -33,15 +33,17 @@
                         <label for="paciente-receta">Nombre completo:</label>
                         <input type="text" id="paciente-receta" name="paciente" placeholder="Nombre del paciente..." required>
                         <label for="paciente-receta">DNI o número de identificación:</label>
-                        <input type="text" id="paciente-receta" name="paciente" placeholder="DNI del paciente..." required>
-                        <label for="paciente-receta">Edad:</label>
-                        <input type="text" id="paciente-receta" name="paciente" placeholder="CUIL del paciente..." required>
-                        <label for="paciente-receta">Obra social o prepaga:</label>
-                        <input type="text" id="paciente-receta" name="paciente" placeholder="Obra social del paciente..." required>
-                        <label for="paciente-receta">Sexo:</label>
-                        <input type="text" id="paciente-receta" name="paciente" placeholder="Sexo del paciente..." required>
-                        <label for="paciente-receta">Fecha de emisión:</label>
-                        <input type="text" id="paciente-receta" name="paciente" placeholder="Sexo del paciente..." required>
+                        <input type="text" id="paciente-receta-dni" name="paciente_dni" placeholder="DNI del paciente..." required> <label for="paciente-receta-edad">Edad:</label>
+                        <input type="text" id="paciente-receta-edad" name="paciente_edad" placeholder="Edad del paciente..." required> <label for="paciente-receta-os">Obra social o prepaga:</label>
+                        <input type="text" id="paciente-receta-os" name="paciente_os" placeholder="Obra social del paciente..." required> <label for="paciente-receta-sexo">Sexo:</label>
+                        <input type="text" id="paciente-receta-sexo" name="paciente_sexo" placeholder="Sexo del paciente..." required> <label for="paciente-receta-fecha">Fecha de emisión:</label>
+                        <input type="date" id="paciente-receta-fecha" name="paciente_fecha" required> </div>
+
+                    <div class="form-group">
+                        <label for="doctor-select-receta">Profesional Emisor:</label>
+                        <select id="doctor-select-receta" name="doctor_seleccionado" class="doctor-select" required>
+                            <option value="">Seleccione un profesional...</option>
+                            </select>
                     </div>
                     <div id="medicamentos-list">
                         <div class="form-group medicamento-item">
@@ -57,22 +59,24 @@
                     <button type="button" id="add-medicamento-btn">+ Agregar otro medicamento</button>
                     <button type="submit">Generar Receta</button>
                 </form>
-
                 <form id="form-parte" class="document-form hidden">
                     <div class="form-group">
                         <label for="paciente-parte">Nombre completo:</label>
                         <input type="text" id="paciente-parte" name="paciente" placeholder="Nombre del paciente..." required>
-                        <label for="paciente-parte">DNI:</label>
-                        <input type="text" id="paciente-parte" name="paciente" placeholder="DNI del paciente..." required>
-                        <label for="paciente-parte">Edad:</label>
-                        <input type="text" id="paciente-parte" name="paciente" placeholder="Edad del paciente..." required>
-                        
+                        <label for="paciente-parte-dni">DNI:</label>
+                        <input type="text" id="paciente-parte-dni" name="paciente_dni" placeholder="DNI del paciente..." required> <label for="paciente-parte-edad">Edad:</label>
+                        <input type="text" id="paciente-parte-edad" name="paciente_edad" placeholder="Edad del paciente..." required> </div>
+
+                    <div class="form-group">
+                        <label for="doctor-select-parte">Profesional Emisor:</label>
+                        <select id="doctor-select-parte" name="doctor_seleccionado" class="doctor-select" required>
+                            <option value="">Seleccione un profesional...</option>
+                            </select>
                     </div>
                     <div class="form-group">
                         <label for="diagnostico">Diagnóstico Principal:</label>
                         <textarea id="diagnostico" name="diagnostico" rows="4" placeholder="Describa el diagnóstico..." required></textarea>
-                        <label for="paciente-fecha">Fecha de emisión del párte médico:</label>
-                        <input type="date" id="paciente-fecha" name="paciente-fecha" required>
+                        <label for="paciente-fecha-parte">Fecha de emisión del parte médico:</label> <input type="date" id="paciente-fecha-parte" name="paciente-fecha" required>
                     </div>
                      <div class="form-group">
                         <label>Días de Licencia:</label>
@@ -85,18 +89,20 @@
                     </div>
                     <button type="submit">Generar Parte</button>
                 </form>
-
                 <form id="form-orden" class="document-form hidden">
                     <div class="form-group">
                         <label for="paciente-orden">Nombre completo:</label>
                         <input type="text" id="paciente-orden" name="paciente" placeholder="Nombre completo del paciente..." required>
-                        <label for="paciente-orden">DNI o número de identificación:</label>
-                        <input type="text" id="paciente-orden" name="paciente" placeholder="DNI del paciente..." required>
-                        <label for="paciente-orden">Edad:</label>
-                        <input type="text" id="paciente-orden" name="paciente" placeholder="Edad del paciente..." required>
-                        <label for="paciente-orden">Obra social o prepaga:</label>
-                        <input type="text" id="paciente-orden" name="paciente" placeholder="Obra social del paciente..." required>
+                        <label for="paciente-orden-dni">DNI o número de identificación:</label>
+                        <input type="text" id="paciente-orden-dni" name="paciente_dni" placeholder="DNI del paciente..." required> <label for="paciente-orden-edad">Edad:</label>
+                        <input type="text" id="paciente-orden-edad" name="paciente_edad" placeholder="Edad del paciente..." required> <label for="paciente-orden-os">Obra social o prepaga:</label>
+                        <input type="text" id="paciente-orden-os" name="paciente_os" placeholder="Obra social del paciente..." required> </div>
                     
+                    <div class="form-group">
+                        <label for="doctor-select-orden">Profesional Emisor:</label>
+                        <select id="doctor-select-orden" name="doctor_seleccionado" class="doctor-select" required>
+                            <option value="">Seleccione un profesional...</option>
+                            </select>
                     </div>
                     <div class="form-group">
                         <label for="tipo-estudio">Tipo de Estudio:</label>
@@ -114,13 +120,13 @@
                     </div>
                     <button type="submit">Generar Orden</button>
                 </form>
-            </div>
+                </div>
 
             <div id="download-section" class="hidden">
                 <h3>¡Documento generado con éxito!</h3>
                 <p>Tu documento está listo para ser descargado.</p>
                 <button id="download-btn">Descargar Documento</button>
-            </div>
+                </div>
 
         </main>
     </div>
