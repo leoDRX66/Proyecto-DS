@@ -22,19 +22,54 @@ const medicos = [
     { nombre: "Dr. Tomás Mendoza", especializacion: "Oncología", matricula: "MN 12364" }
 ];
 
+// (NUEVO) Variables para guardar las imágenes en formato Base64
+let logoImgData = '';
+let firmaImgData = '';
+
+// (NUEVO) Función para convertir imágenes a Base64
+function loadImageAsBase64(url, callback) {
+    const img = new Image();
+    img.crossOrigin = 'Anonymous'; // Necesario si las imágenes estuvieran en otro servidor
+    img.onload = () => {
+        const canvas = document.createElement('canvas');
+        canvas.width = img.width;
+        canvas.height = img.height;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0);
+        const dataURL = canvas.toDataURL('image/png');
+        callback(dataURL);
+    };
+    img.src = url;
+}
+
+// (NUEVO) Esperamos a que la página (incluidas las imágenes) se cargue
+window.onload = () => {
+    const logoImgElement = document.getElementById('logo-img');
+    const firmaImgElement = document.getElementById('firma-img');
+
+    if (logoImgElement && firmaImgElement) {
+        loadImageAsBase64(logoImgElement.src, (data) => {
+            logoImgData = data;
+            console.log('Logo cargado en Base64.');
+        });
+        loadImageAsBase64(firmaImgElement.src, (data) => {
+            firmaImgData = data;
+            console.log('Firma cargada en Base64.');
+        });
+    } else {
+        console.error("No se encontraron los elementos <img> de precarga.");
+    }
+};
+
 
 document.addEventListener('DOMContentLoaded', () => {
-    // --- (NUEVO) Importar el constructor de jsPDF ---
-    // Asegúrate de que jsPDF esté cargado en tu HTML
+    // --- IMPORTAR LIBRERÍA ---
     const { jsPDF } = window.jspdf;
 
     // --- ELEMENTOS DEL DOM ---
     const selector = document.getElementById('document-type');
     const formContainer = document.getElementById('form-container');
     const formTitle = document.getElementById('form-title');
-    
-    // (ELIMINADOS) 'downloadSection' y 'downloadBtn' ya no son necesarios
-    
     const addMedBtn = document.getElementById('add-medicamento-btn');
     const medicamentosList = document.getElementById('medicamentos-list');
     const doctorDropdowns = document.querySelectorAll('.doctor-select');
@@ -44,8 +79,6 @@ document.addEventListener('DOMContentLoaded', () => {
         parte: document.getElementById('form-parte'),
         orden: document.getElementById('form-orden')
     };
-    
-    // (ELIMINADAS) 'generatedContent' y 'documentName' globales
 
     // --- FUNCIÓN PARA POBLAR LOS MENÚS DE DOCTORES ---
     function populateDoctorDropdowns() {
@@ -55,7 +88,8 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             medicos.forEach(medico => {
                 const option = document.createElement('option');
-                option.value = `${medico.nombre} - ${medico.especializacion} - Mat. ${medico.matricula}`;
+                // (MODIFICADO) Usamos '|' para poder parsear los datos fácilmente
+                option.value = `${medico.nombre}|${medico.especializacion}|${medico.matricula}`;
                 option.textContent = `${medico.nombre} (${medico.especializacion})`;
                 dropdown.appendChild(option);
             });
@@ -63,7 +97,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     populateDoctorDropdowns();
 
-    // --- MANEJADOR DEL MENÚ PRINCIPAL (Sin cambios) ---
+    // --- MANEJADOR DEL MENÚ PRINCIPAL ---
     selector.addEventListener('change', () => {
         const selectedValue = selector.value;
         const titles = {
@@ -92,17 +126,14 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // --- (MODIFICADA) FUNCIÓN PARA REINICIAR LA INTERFAZ ---
+    // --- FUNCIÓN PARA REINICIAR LA INTERFAZ ---
     const resetUI = () => {
-        // (ELIMINADO) Código que manejaba 'downloadSection'
-        
         Object.values(forms).forEach(form => {
             form.classList.remove('visible');
             form.reset();
             setTimeout(() => form.classList.add('hidden'), 500);
         });
 
-        // Limpia medicamentos adicionales
         const extraMedicamentos = medicamentosList.querySelectorAll('.medicamento-item:not(:first-child)');
         extraMedicamentos.forEach(item => item.remove());
 
@@ -110,7 +141,7 @@ document.addEventListener('DOMContentLoaded', () => {
         selector.value = '';
     };
 
-    // --- LÓGICA PARA AÑADIR MEDICAMENTOS (Sin cambios) ---
+    // --- LÓGICA PARA AÑADIR MEDICAMENTOS ---
     addMedBtn.addEventListener('click', () => {
         const newItem = document.createElement('div');
         newItem.classList.add('form-group', 'medicamento-item');
@@ -127,7 +158,7 @@ document.addEventListener('DOMContentLoaded', () => {
         medicamentosList.appendChild(newItem);
     });
 
-    // --- LÓGICA PARA BOTONES DE DÍAS (Sin cambios) ---
+    // --- LÓGICA PARA BOTONES DE DÍAS ---
     document.querySelectorAll('.dias-btn').forEach(button => {
         button.addEventListener('click', () => {
             document.querySelectorAll('.dias-btn').forEach(btn => btn.classList.remove('selected'));
@@ -144,7 +175,14 @@ document.addEventListener('DOMContentLoaded', () => {
             
             // Usamos Object.fromEntries para capturar TODOS los campos fácilmente
             let data = Object.fromEntries(formData.entries());
-            data.doctor = data.doctor_seleccionado; // Renombramos para claridad
+            
+            // Parsear datos del doctor
+            const [nombreDoctor, especializacionDoctor, matriculaDoctor] = data.doctor_seleccionado.split('|');
+            data.doctor = {
+                nombre: nombreDoctor,
+                especializacion: especializacionDoctor,
+                matricula: matriculaDoctor
+            };
 
             // Casos especiales (campos múltiples)
             if (form.id === 'form-receta') {
@@ -153,96 +191,166 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             // 1. Genera el PDF y dispara la descarga
-            generateFileContent(form.id, data);
+            generateCertificatePdf(form.id, data);
 
             // 2. Resetea la UI para volver al inicio
             resetUI();
         });
     });
     
-    // --- (REESCRITO) GENERACIÓN DE CONTENIDO AHORA EN PDF ---
-    function generateFileContent(formId, data) {
-        // 1. Crear un nuevo documento PDF
-        const doc = new jsPDF();
+    // --- (NUEVA FUNCIÓN) GENERACIÓN DE PDF PROFESIONAL ---
+    function generateCertificatePdf(formId, data) {
         
-        let documentName = '';
-        const patient = data.paciente || 'N/A';
-        let y = 20; // Posición Y inicial (margen superior)
-        const margin = 15; // Margen izquierdo
-        const lineHeight = 8; // Espacio entre líneas
-        const anchoMaximo = 180; // Ancho máximo del texto antes de cortar línea
+        const doc = new jsPDF('p', 'mm', 'a4'); // 'p' (portrait), 'mm' (milímetros), 'a4' (tamaño)
+        
+        // --- VARIABLES DE DISEÑO ---
+        const margin = 20;
+        const pageWidth = doc.internal.pageSize.getWidth();
+        const contentWidth = pageWidth - (margin * 2);
+        const lineHeight = 7;
+        let y = margin + 10; // Posición Y inicial
 
-        // Título del documento
-        doc.setFontSize(18);
-        doc.text("DOCUMENTO MÉDICO", margin, y);
-        y += lineHeight * 2; // Doble espacio
+        // --- 1. ENCABEZADO (Logo y Datos del Doctor) ---
+        if (logoImgData) {
+            doc.addImage(logoImgData, 'PNG', margin, y, 30, 30); // Logo (30x30 mm)
+        }
 
+        doc.setFont('helvetica', 'bold');
         doc.setFontSize(12);
+        doc.text(data.doctor.nombre, pageWidth / 2, y + 5, { align: 'center' });
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(10);
+        doc.text(data.doctor.especializacion, pageWidth / 2, y + 12, { align: 'center' });
+        doc.text(data.doctor.matricula, pageWidth / 2, y + 19, { align: 'center' });
+        
+        y += 40; // Moverse hacia abajo después del encabezado
 
+        // --- TÍTULO DEL DOCUMENTO ---
+        let docTitle = '';
+        let documentName = '';
+        
         if (formId === 'form-receta') {
-            documentName = `Receta-${patient.replace(/\s/g, '_')}.pdf`;
-            doc.text(`TIPO: Receta Médica`, margin, y); y += lineHeight;
-            doc.text(`FECHA: ${data.paciente_fecha || 'N/A'}`, margin, y); y += lineHeight * 1.5;
-
-            doc.text(`PACIENTE: ${patient}`, margin, y); y += lineHeight;
-            doc.text(`DNI: ${data.paciente_dni || 'N/A'}`, margin, y); y += lineHeight;
-            doc.text(`EDAD: ${data.paciente_edad || 'N/A'}`, margin, y); y += lineHeight;
-            doc.text(`OBRA SOCIAL: ${data.paciente_os || 'N/A'}`, margin, y); y += lineHeight * 1.5;
-
-            doc.setFontSize(14);
-            doc.text("MEDICAMENTOS:", margin, y); y += lineHeight;
-            doc.setFontSize(12);
-            data.medicamentos.forEach((medicamento, index) => {
-                const indicacion = data.indicaciones[index] || 'Sin indicación';
-                doc.text(`- ${medicamento}`, margin + 5, y); y += lineHeight;
-                doc.setFontSize(10);
-                doc.text(`  Indicación: ${indicacion}`, margin + 5, y); y += lineHeight;
-                doc.setFontSize(12);
-            });
-        
+            docTitle = 'RECETA MÉDICA';
+            documentName = `Receta-${(data.paciente || '').replace(/\s/g, '_')}.pdf`;
         } else if (formId === 'form-parte') {
-            documentName = `Parte-${patient.replace(/\s/g, '_')}.pdf`;
-            doc.text(`TIPO: Parte Médico`, margin, y); y += lineHeight;
-            doc.text(`FECHA: ${data['paciente-fecha'] || 'N/A'}`, margin, y); y += lineHeight * 1.5;
-
-            doc.text(`PACIENTE: ${patient}`, margin, y); y += lineHeight;
-            doc.text(`DNI: ${data.paciente_dni || 'N/A'}`, margin, y); y += lineHeight;
-            doc.text(`EDAD: ${data.paciente_edad || 'N/A'}`, margin, y); y += lineHeight * 1.5;
-            
-            doc.text(`DIAGNÓSTICO:`, margin, y); y += lineHeight;
-            const diagnostico = doc.splitTextToSize(data.diagnostico || 'N/A', anchoMaximo);
-            doc.text(diagnostico, margin + 5, y); y += (diagnostico.length * lineHeight);
-            
-            doc.text(`LICENCIA: ${data.dias_licencia || 'N/A'}`, margin, y); y += lineHeight;
-        
+            docTitle = 'PARTE MÉDICO';
+            documentName = `Parte-${(data.paciente || '').replace(/\s/g, '_')}.pdf`;
         } else if (formId === 'form-orden') {
-            documentName = `Orden-${patient.replace(/\s/g, '_')}.pdf`;
-            doc.text(`TIPO: Orden Médica`, margin, y); y += lineHeight * 1.5;
-
-            doc.text(`PACIENTE: ${patient}`, margin, y); y += lineHeight;
-            doc.text(`DNI: ${data.paciente_dni || 'N/A'}`, margin, y); y += lineHeight;
-            doc.text(`EDAD: ${data.paciente_edad || 'N/A'}`, margin, y); y += lineHeight;
-            doc.text(`OBRA SOCIAL: ${data.paciente_os || 'N/A'}`, margin, y); y += lineHeight * 1.5;
-
-            doc.text(`TIPO DE ESTUDIO: ${data.tipo_estudio || 'N/A'}`, margin, y); y += lineHeight * 1.5;
-            
-            doc.text(`DETALLES Y JUSTIFICACIÓN:`, margin, y); y += lineHeight;
-            // La función 'splitTextToSize' corta el texto largo para que quepa en el ancho de la página
-            const details = doc.splitTextToSize(data.detalles || 'Sin detalles', anchoMaximo); 
-            doc.text(details, margin + 5, y);
-            y += (details.length * lineHeight); // Aumenta 'y' por cada línea de detalle
+            docTitle = 'ORDEN MÉDICA';
+            documentName = `Orden-${(data.paciente || '').replace(/\s/g, '_')}.pdf`;
         }
         
-        // Firma del doctor (común a todos los documentos)
-        y += lineHeight * 4; // Espacio antes de la firma
-        doc.text("------------------------------------", margin, y); y += lineHeight;
-        doc.text("Firma del Profesional:", margin, y); y += lineHeight;
-        doc.text(data.doctor || 'Sin firma', margin, y);
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(16);
+        doc.text(docTitle, pageWidth / 2, y, { align: 'center' });
         
-        // 3. Guardar el PDF y forzar la descarga
+        y += 15;
+
+        // --- 2. DATOS DEL PACIENTE (¡INCLUIMOS TODO!) ---
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(12);
+        doc.text('DATOS DEL PACIENTE', margin, y);
+        doc.line(margin, y + 2, margin + contentWidth, y + 2); // Línea divisoria
+        y += (lineHeight * 1.5);
+        
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(11);
+        
+        // Función para añadir campos en dos columnas
+        const addPatientData = (label, value) => {
+            if (value) { // Solo añade el campo si tiene un valor
+                doc.setFont('helvetica', 'bold');
+                doc.text(label, margin, y);
+                doc.setFont('helvetica', 'normal');
+                doc.text(value, margin + 40, y); // 40mm para la etiqueta
+                y += lineHeight;
+            }
+        };
+
+        addPatientData('Nombre:', data.paciente);
+        addPatientData('DNI:', data.paciente_dni);
+        addPatientData('Edad:', data.paciente_edad);
+        addPatientData('Sexo:', data.paciente_sexo);
+        addPatientData('Obra Social:', data.paciente_os);
+        
+        let fecha = data.paciente_fecha ? new Date(data.paciente_fecha).toLocaleDateString('es-ES') : new Date().toLocaleDateString('es-ES');
+        addPatientData('Fecha:', fecha);
+
+        // --- 3. CUERPO DEL DOCUMENTO (Contenido específico) ---
+        
+        // Función de ayuda para secciones de texto largo
+        const addSection = (title, text) => {
+            y += (lineHeight * 2);
+            doc.setFont('helvetica', 'bold');
+            doc.setFontSize(12);
+            doc.text(title, margin, y);
+            doc.line(margin, y + 2, margin + contentWidth, y + 2);
+            y += (lineHeight * 1.5);
+            
+            doc.setFont('helvetica', 'normal');
+            doc.setFontSize(11);
+            
+            // 'splitTextToSize' divide el texto largo para que quepa en el ancho
+            const splitText = doc.splitTextToSize(text || 'N/A', contentWidth);
+            doc.text(splitText, margin, y);
+            y += (splitText.length * lineHeight); // Mover 'y' según cuántas líneas ocupe el texto
+        };
+
+        if (formId === 'form-receta') {
+            y += (lineHeight * 2);
+            doc.setFont('helvetica', 'bold');
+            doc.setFontSize(12);
+            doc.text('MEDICAMENTOS', margin, y);
+            doc.line(margin, y + 2, margin + contentWidth, y + 2);
+            y += (lineHeight * 1.5);
+            
+            doc.setFont('helvetica', 'normal');
+            doc.setFontSize(11);
+            
+            data.medicamentos.forEach((med, index) => {
+                doc.setFont('helvetica', 'bold');
+                doc.text(`- ${med}`, margin, y);
+                y += lineHeight;
+                
+                doc.setFont('helvetica', 'normal');
+                const indicacion = data.indicaciones[index] || 'Sin indicación';
+                const splitIndicacion = doc.splitTextToSize(`  Indicación: ${indicacion}`, contentWidth - 5);
+                doc.text(splitIndicacion, margin, y);
+                y += (splitIndicacion.length * lineHeight) + 3; // Espacio extra
+            });
+
+        } else if (formId === 'form-parte') {
+            addSection('DIAGNÓSTICO', data.diagnostico);
+            addSection('DÍAS DE LICENCIA', data.dias_licencia);
+
+        } else if (formId === 'form-orden') {
+            addSection('TIPO DE ESTUDIO', data.tipo_estudio);
+            addSection('DETALLES Y JUSTIFICACIÓN', data.detalles);
+        }
+
+        // --- 4. PIE DE PÁGINA (Firma) ---
+        const firmaY = 250; // Posición Y fija cerca del final de la página (A4 es 297mm)
+        const firmaAncho = 50;
+        const firmaAlto = 25;
+        
+        if (firmaImgData) {
+            // Centrar la firma
+            const firmaX = (pageWidth - firmaAncho) / 2;
+            doc.addImage(firmaImgData, 'PNG', firmaX, firmaY, firmaAncho, firmaAlto);
+        }
+        
+        // Línea de firma
+        doc.line(margin + 40, firmaY + firmaAlto + 2, pageWidth - margin - 40, firmaY + firmaAlto + 2);
+        
+        // Texto de firma
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(10);
+        doc.text(data.doctor.nombre, pageWidth / 2, firmaY + firmaAlto + 8, { align: 'center' });
+        doc.setFont('helvetica', 'normal');
+        doc.text(data.doctor.matricula, pageWidth / 2, firmaY + firmaAlto + 13, { align: 'center' });
+
+
+        // --- 5. GUARDAR ---
         doc.save(documentName);
     }
-
-    // --- (ELIMINADO) MANEJADOR DEL BOTÓN DE DESCARGA ---
-    // ya no es necesario.
 });

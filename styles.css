@@ -89,7 +89,6 @@ header p {
 }
 
 input[type="text"],
-/* (NUEVO) Aplicar estilos a input[type="date"] */
 input[type="date"], 
 textarea,
 select {
@@ -104,7 +103,6 @@ select {
 /* Estilos específicos para el formulario de receta */
 .medicamento-item {
     display: grid;
-    /* (MODIFICADO) Cambiado para que quepa mejor la nueva estructura */
     grid-template-columns: 1fr; 
     gap: 10px;
     border-left: 3px solid #3498db;
@@ -112,7 +110,6 @@ select {
     margin-top: 15px;
 }
 
-/* (NUEVO) Estilos para los <br> dentro del item de medicamento */
 .medicamento-item br {
     display: none;
 }
@@ -159,37 +156,9 @@ button[type="submit"]:hover {
     color: white;
 }
 
-
-/* Sección de descarga 
-  (YA NO SE USA, PERO NO MOLESTA DEJARLA) 
-*/
-#download-section {
-    text-align: center;
-    padding: 20px;
-    border: 2px dashed #2ecc71;
-    border-radius: 8px;
-    opacity: 0;
-    transform: scale(0.9);
-    transition: opacity 0.5s ease, transform 0.5s ease;
-}
-
-#download-section.visible {
-    opacity: 1;
-    transform: scale(1);
-}
-
-#download-btn {
-    background-color: #3498db;
-    color: white;
-    font-size: 1.2rem;
-    padding: 15px 30px;
-}
-
-#download-btn:hover {
-    background-color: #2980b9;
-}
-
 /* Clase de utilidad para ocultar elementos */
 .hidden {
     display: none;
 }
+
+/* ESTILOS DE PDF-TEMPLATE ELIMINADOS */
